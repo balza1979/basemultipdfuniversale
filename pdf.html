@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-<meta charset="UTF-8">
+<meta charset="UTF-8" />
 <title>PDF</title>
 
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
@@ -28,20 +28,22 @@
     right: 15px;
     display: flex;
     justify-content: space-between;
+    align-items: center;
     z-index: 999;
+    gap: 10px;
   }
+  .top-left, .top-right { display: flex; gap: 10px; align-items: center; }
 
   .btn {
     text-decoration: none;
     font-weight: bold;
     border-radius: 6px;
-    padding: 14px 22px;
+    padding: 10px 16px;
     color: white;
     background: #0275d8;
-    font-size: 22px;
+    font-size: 18px;
     box-shadow: 0 2px 6px rgba(0,0,0,0.25);
   }
-
   .btn-home { background: #d9534f; }
 
   main {
@@ -77,6 +79,7 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
+    gap: 16px;
     box-shadow: 0 3px 12px rgba(0,0,0,0.15);
   }
 
@@ -93,6 +96,7 @@
     display: flex;
     flex-direction: column;
     gap: 14px;
+    min-width: 220px;
   }
 
   .action {
@@ -109,19 +113,22 @@
   .blue  { background: #0275d8; }
 
   #testFrame { display: none; }
+
+  .empty {
+    background: rgba(255,255,255,0.85);
+    padding: 16px 20px;
+    border-radius: 10px;
+    font-size: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  }
 </style>
 
 </head>
 <body>
 
 <div class="top-bar">
-  ./index.html⬅ Torna</a>
-  https://balza1979.github.io/Elmi-Documenti/
-</div>
-
-<main>
-
-  <h1 id="titolo">PDF</h1>
+  <div class="top-left">
+    <a class="btn btn-home" href="./index.html" aria-label="Torna alla paginabtn" href="https://balza1979.github.io/Elmi-Documenti/" target="_blank" rel="noopener noreferrer" ariad="titolo">PDF</h1>
 
   <div class="hint">
     <b>Descrizione comandi:</b><br>
@@ -130,31 +137,47 @@
   </div>
 
   <div id="pdf-container"></div>
-
 </main>
 
 <iframe id="testFrame"></iframe>
 
 <script>
 (function () {
+  // Determina la base del sito per GitHub Pages (repo-name è il primo segmento)
+  const pathParts = window.location.pathname.split("/").filter(Boolean);
+  const siteRoot = pathParts.length > 0 ? `/${pathParts[0]}` : "";
+  const siteBase = window.location.origin + siteRoot;
 
   const qs = new URLSearchParams(window.location.search);
   const cart = qs.get("cartella") || "";
   const ts = qs.get("ts") || Date.now();
 
-  document.getElementById("titolo").textContent = "PDF in: " + cart;
+  const titolo = document.getElementById("titolo");
+  titolo.textContent = cart ? ("PDF in: " + cart) : "PDF";
 
-  const base = window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, "");
-  const loadingURL = base + "/loading.html";
-
-  fetch("elenco.json?ts=" + ts)
-    .then(r => r.json())
+  // Se elenco.json sta nella stessa cartella della pagina, puoi usare percorso relativo semplice:
+  // fetch("elenco.json?ts=" + ts)
+  // Se invece è alla radice del sito, usa:
+  fetch(`${siteBase}/elenco.json?ts=${encodeURIComponent(ts)}`)
+    .then(r => {
+      if (!r.ok) throw new Error("Impossibile leggere elenco.json");
+      return r.json();
+    })
     .then(data => {
-      const arr = data[cart] || [];
+      const arr = (data && data[cart]) || [];
       const container = document.getElementById("pdf-container");
 
-      arr.forEach(pdf => {
+      if (!Array.isArray(arr) || arr.length === 0) {
+        const info = document.createElement("div");
+        info.className = "empty";
+        info.textContent = cart
+          ? `Nessun PDF trovato nella cartella: ${cart}`
+          : "Nessun PDF disponibile. Specificare il parametro ?cartella=...";
+        container.appendChild(info);
+        return;
+      }
 
+      arr.forEach(pdf => {
         const row = document.createElement("div");
         row.className = "pdf-row";
 
@@ -168,19 +191,22 @@
         const encodedName = encodeURIComponent(pdf);
         const encodedCart = encodeURIComponent(cart);
 
-        const direct = `${base}/pdf/${encodedCart}/${encodedName}`;
-        const gview  = `https://docs.google.com/gview?embedded=1&url=${direct}`;
+        // Percorso assoluto riferito alla radice del sito GitHub Pages
+        const direct = `${siteBase}/pdf/${encodedCart}/${encodedName}`;
+        const gview  = `https://docs.google.com/gview?embedded=1&url=${encodeURIComponent(direct)}`;
 
-        // Pulsante scarica
+        // Pulsante scarica/vedi
         const b1 = document.createElement("button");
         b1.className = "action green";
         b1.textContent = "Vedi/Scarica";
-        b1.onclick = () => window.open(direct, "_blank");
+        b1.setAttribute("aria-label", `Apri o scarica ${pdf}`);
+        b1.onclick = () => window.open(direct, "_blank", "noopener");
 
         // Pulsante online
         const b2 = document.createElement("button");
         b2.className = "action blue";
         b2.textContent = "Vedi Online";
+        b2.setAttribute("aria-label", `Visualizza online ${pdf} tramite Google Viewer`);
         b2.onclick = () => checkOnline(direct, gview);
 
         col.appendChild(b1);
@@ -190,25 +216,45 @@
         row.appendChild(col);
         container.appendChild(row);
       });
+    })
+    .catch(err => {
+      const container = document.getElementById("pdf-container");
+      const info = document.createElement("div");
+      info.className = "empty";
+      info.textContent = "Errore nel caricamento dell'elenco: " + (err && err.message ? err.message : err);
+      container.appendChild(info);
     });
 
+  // URL della pagina "loading" (qui ipotizzo sia accanto a questa pagina)
+  const loadingURL = siteBase + "/loading.html";
+
   function checkOnline(direct, gview) {
-    const w = window.open(loadingURL, "_blank");
-    if (!w) return;
+    const w = window.open(loadingURL, "_blank", "noopener");
+    if (!w) {
+      // Popup bloccato: apri direttamente Google Viewer (comportamento di fallback)
+      window.open(gview, "_blank", "noopener");
+      return;
+    }
 
     const frame = document.getElementById("testFrame");
+    // Reset a about:blank prima di testare
+    frame.src = "about:blank";
+
+    // Carica il PDF diretto nell'iframe (se stessa origine il test ha più chance di funzionare)
     frame.src = direct;
 
     setTimeout(() => {
       let ok = false;
-      try { ok = frame.contentWindow.location.href !== "about:blank"; }
-      catch(e){}
-
+      try {
+        // In ambienti same-origin questo può funzionare
+        ok = frame.contentWindow && frame.contentWindow.location && frame.contentWindow.location.href !== "about:blank";
+      } catch (e) {
+        // Cross-origin o PDF viewer che impedisce l’accesso: lascia ok = false
+      }
+      // Se ok, vai diretto, altrimenti Google Viewer
       w.location.href = ok ? direct : gview;
-
     }, 5000);
   }
-
 })();
 </script>
 
