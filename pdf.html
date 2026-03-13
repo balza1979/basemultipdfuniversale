@@ -1,6 +1,66 @@
 <!DOCTYPE html>
-<html>
-<body style="background:yellow; font-size:40px;">
-TEST PDF.HTML FUNZIONA
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<title>PDF – TEST</title>
+
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    background: white;
+  }
+
+  .card {
+    background: #f3f3f3;
+    padding: 20px;
+    margin: 15px 0;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+  }
+
+  .card button {
+    padding: 10px 20px;
+    font-size: 18px;
+    margin-top: 10px;
+  }
+</style>
+</head>
+
+<body>
+
+<h1 id="titolo">TEST PDF</h1>
+<div id="pdf-container"></div>
+
+<script>
+const qs = new URLSearchParams(window.location.search);
+const cart = qs.get("cartella");
+
+document.getElementById("titolo").textContent = "Cartella: " + cart;
+
+fetch("elenco.json?ts=" + Date.now())
+  .then(r => r.json())
+  .then(data => {
+    const arr = data[cart] || [];
+    const container = document.getElementById("pdf-container");
+
+    arr.forEach(pdf => {
+      const div = document.createElement("div");
+      div.className = "card";
+
+      const title = document.createElement("div");
+      title.textContent = pdf;
+
+      const btn = document.createElement("button");
+      btn.textContent = "Apri PDF";
+      btn.onclick = () => alert("Hai cliccato: " + pdf);
+
+      div.appendChild(title);
+      div.appendChild(btn);
+      container.appendChild(div);
+    });
+  });
+</script>
+
 </body>
 </html>
