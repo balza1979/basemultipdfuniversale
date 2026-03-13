@@ -44,7 +44,6 @@ jobs:
                   echo -n ", " >> elenco.json
                 fi
 
-                # AGGIUNTA VIRGOLETTE
                 echo -n "\"${fileName}\"" >> elenco.json
               fi
             done
