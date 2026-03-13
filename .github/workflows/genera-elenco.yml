@@ -1,0 +1,40 @@
+name: Genera elenco PDF
+on:
+  push:
+    paths:
+      - 'pdf/**'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Genera elenco PDF
+      run: |
+        echo "{" > elenco.json
+        first=true
+        for folder in pdf/*; do
+          [ -d "$folder" ] || continue
+          name=$(basename "$folder")
+          if [ "$first" = true ]; then first=false; else echo "," >> elenco.json; fi
+          echo -n "  "$name": [" >> elenco.json
+          f=true
+          for file in "$folder"/*.pdf; do
+            [ -f "$file" ] || continue
+            bn=$(basename "$file")
+            if [ "$f" = true ]; then f=false; else echo -n ", " >> elenco.json; fi
+            echo -n ""$bn"" >> elenco.json
+          done
+          echo -n "]" >> elenco.json
+        done
+        echo "}" >> elenco.json
+    - name: Commit
+      run: |
+        git config --global user.name 'GitHub Actions'
+        git config --global user.email 'actions@github.com'
+        git add elenco.json
+        git commit -m 'Aggiornato elenco PDF' || echo 'Nessuna modifica'
+        git push
