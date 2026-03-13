@@ -9,7 +9,7 @@
         font-family: Arial, sans-serif;
         margin: 0;
         padding: 0;
-        background-image: url('sfondo-elmi-verticale.jpg'); /* stesso sfondo delle altre pagine */
+        background-image: url('sfondo-elmi-verticale.jpg');
         background-size: cover;
         background-position: center top;
         background-repeat: no-repeat;
@@ -88,8 +88,7 @@
 </head>
 <body>
 
-<!-- 🔴 HOME BUTTON RIPRISTINATO CORRETTO! -->
-https://balza1979.github.io/Elmi-Documenti/Home</a>
+https://balza1979.github.io/Elmi-Documenti/
 
 <h1>Seleziona una Cartella</h1>
 
@@ -112,6 +111,9 @@ fetch("elenco.json")
 
       container.appendChild(card);
     });
+  })
+  .catch(err => {
+    console.error("Errore JSON:", err);
   });
 </script>
 
