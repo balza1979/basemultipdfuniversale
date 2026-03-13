@@ -4,95 +4,234 @@
 <meta charset="UTF-8">
 <title>PDF</title>
 
+<!-- Anti-cache lato client (aiuta su GitHub Pages) -->
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Expires" content="0" />
+
 <style>
-body {
+  body {
     font-family: Arial, sans-serif;
-    padding: 20px;
-    background: #f5f5f5;
-}
+    margin: 0; padding: 0;
+    background-image: url('sfondo-elmi-verticale.jpg');
+    background-size: cover;
+    background-position: center top;
+    background-repeat: no-repeat;
+    min-height: 100vh;
+  }
 
-h1 {
+  /* Barra comandi in alto */
+  .top-bar {
+    position: fixed; top: 15px; left: 15px; right: 15px;
+    display: flex; justify-content: space-between; align-items: center;
+    z-index: 999;
+  }
+
+  .btn {
+    display: inline-block;
+    text-decoration: none;
+    font-weight: bold;
+    border-radius: 6px;
+    padding: 14px 22px;
+    color: #fff;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+    transition: background-color 0.2s ease;
+    font-size: 20px;
+  }
+  .btn-back { background-color: #0275d8; }
+  .btn-back:hover { background-color: #025aa5; }
+  .btn-home { background-color: #d9534f; }
+  .btn-home:hover { background-color: #c9302c; }
+
+  main {
+    max-width: 900px;
+    margin: 120px auto 40px auto;
+    padding: 10px 10px 40px 10px;
+  }
+
+  h1 {
+    text-align: center;
     color: red;
-    font-size: 40px;
-}
+    font-size: 48px;
+    margin: 30px 0 10px 0;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.15);
+  }
 
-.card {
+  .hint {
+    max-width: 900px;
+    margin: 0 auto 20px auto;
+    background: rgba(255, 255, 255, 0.85);
+    color: #333;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 16px;
+    line-height: 1.35;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  }
+
+  .card {
     background: white;
     padding: 20px;
-    margin: 15px 0;
+    margin: 15px auto;
+    max-width: 850px;
     border-radius: 10px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-}
+  }
 
-.card button {
-    margin-right: 10px;
-    padding: 10px 20px;
+  .file-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #111;
+    margin: 0 0 14px 0;
+    word-break: break-word;
+  }
+
+  .actions {
+    display: flex; gap: 12px; flex-wrap: wrap;
+  }
+
+  .btn-action {
+    background: #28a745;
+    color: #fff;
+    border: none;
+    padding: 12px 18px;
+    border-radius: 6px;
+    cursor: pointer;
     font-size: 18px;
-}
-</style>
+    font-weight: 700;
+    transition: background 0.2s ease;
+  }
+  .btn-action.secondary {
+    background: #007bff;
+  }
+  .btn-action:hover { filter: brightness(0.92); }
 
+  /* iframe test nascosto */
+  #testFrame { display: none; }
+</style>
 </head>
 
 <body>
 
-./index.html⬅ Torna</a>
+<!-- Barra comandi -->
+<div class="top-bar">
+  ./index.html⬅ Torna</a>
+  <a class="lza1979.github.io/Elmi-Documenti/Home</a>
+</div>
 
-<h1 id="titolo"></h1>
-<div id="pdf-container"></div>
+<main>
+  <h1 id="titolo">PDF</h1>
+  <div class="hint">
+    <strong>Descrizione comandi:</strong><br>
+    • <em>Vedi/Scarica</em> — apre o scarica a seconda del browser<br>
+    • <em>Vedi Online</em> — forza la visualizzazione via Google Viewer (con un test di 5s)
+  </div>
 
-<iframe id="testFrame" style="display:none;"></iframe>
+  <div id="pdf-container"></div>
+</main>
+
+<!-- iframe invisibile per test -->
+<iframe id="testFrame"></iframe>
 
 <script>
-const p = new URLSearchParams(window.location.search);
-const cart = p.get("cartella");
-document.getElementById("titolo").innerHTML = "PDF in: " + cart;
+(function() {
+  // Parametro cartella
+  const qs = new URLSearchParams(window.location.search);
+  const cart = qs.get('cartella') || '';
 
-const base = window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, "");
-const load = base + "/loading.html";
+  // Titolo
+  document.getElementById('titolo').textContent = cart ? ('PDF in: ' + cart) : 'PDF';
 
-fetch("elenco.json")
-  .then(r => r.json())
-  .then(data => {
-    const arr = data[cart];
-    const container = document.getElementById("pdf-container");
+  // URL base universale (stessa cartella della pagina)
+  const base = window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, '');
+  const loadingURL = base + '/loading.html';
 
-    arr.forEach(pdf => {
-      const encoded = encodeURIComponent(pdf);
-      const folder = encodeURIComponent(cart);
+  // Anti-cache per elenco.json
+  const elencoUrl = 'elenco.json?ts=' + Date.now();
 
-      const direct = `${base}/pdf/${folder}/${encoded}`;
-      const gview = `https://docs.google.com/gview?embedded=1&url=${direct}`;
+  // Carico elenco
+  fetch(elencoUrl)
+    .then(r => r.json())
+    .then(data => {
+      const arr = (data && data[cart]) ? data[cart] : [];
+      const container = document.getElementById('pdf-container');
 
-      const div = document.createElement("div");
-      div.className = "card";
+      if (!arr.length) {
+        const info = document.createElement('div');
+        info.className = 'card';
+        info.textContent = 'Nessun PDF trovato nella cartella: ' + cart;
+        container.appendChild(info);
+        return;
+      }
 
-      div.innerHTML = `
-        <b>${pdf}</b><br><br>
-        <button onclick="window.open('${direct}','_blank')">Vedi/Scarica</button>
-        <button onclick="safe('${direct}', '${gview}')">Vedi Online</button>
-      `;
+      arr.forEach(pdfName => {
+        const encodedName = encodeURIComponent(pdfName);
+        const encodedFolder = encodeURIComponent(cart);
 
-      container.appendChild(div);
+        const direct = `${base}/pdf/${encodedFolder}/${encodedName}`;
+        const gview  = `https://docs.google.com/gview?embedded=1&url=${direct}`;
+
+        // Costruzione card senza innerHTML
+        const card = document.createElement('div');
+        card.className = 'card';
+
+        const title = document.createElement('div');
+        title.className = 'file-title';
+        title.textContent = pdfName;
+
+        const actions = document.createElement('div');
+        actions.className = 'actions';
+
+        const btnFast = document.createElement('button');
+        btnFast.className = 'btn-action';
+        btnFast.textContent = 'Vedi/Scarica';
+        btnFast.addEventListener('click', () => {
+          window.open(direct, '_blank');
+        });
+
+        const btnSafe = document.createElement('button');
+        btnSafe.className = 'btn-action secondary';
+        btnSafe.textContent = 'Vedi Online';
+        btnSafe.addEventListener('click', () => openSafe(direct, gview));
+
+        actions.appendChild(btnFast);
+        actions.appendChild(btnSafe);
+
+        card.appendChild(title);
+        card.appendChild(actions);
+
+        container.appendChild(card);
+      });
+    })
+    .catch(err => {
+      console.error('Errore nel fetch di elenco.json:', err);
+      const container = document.getElementById('pdf-container');
+      const info = document.createElement('div');
+      info.className = 'card';
+      info.style.color = 'red';
+      info.textContent = 'Errore nel caricamento di elenco.json';
+      container.appendChild(info);
     });
-  });
 
-function safe(direct, gview) {
-  const newTab = window.open(load, "_blank");
-  if (!newTab) return;
+  // Apertura "sicura": prova direct per 5s, altrimenti gView
+  function openSafe(directUrl, gviewUrl) {
+    const newTab = window.open(loadingURL, '_blank');
+    if (!newTab) return;
 
-  const frame = document.getElementById("testFrame");
-  frame.src = direct;
+    const frame = document.getElementById('testFrame');
+    frame.src = directUrl;
 
-  setTimeout(() => {
-    let ok = false;
-    try {
-      ok = frame.contentWindow.location.href !== "about:blank";
-    } catch (e) {}
-
-    newTab.location.href = ok ? direct : gview;
-
-  }, 5000);
-}
+    setTimeout(() => {
+      let ok = false;
+      try {
+        ok = frame.contentWindow.location.href !== 'about:blank';
+      } catch (e) {
+        ok = false;
+      }
+      newTab.location.href = ok ? directUrl : gviewUrl;
+    }, 5000);
+  }
+})();
 </script>
 
 </body>
