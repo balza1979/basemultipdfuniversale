@@ -175,3 +175,157 @@
     .button-column { min-width: unset; width: 100%; }
     .card button { width: 100%; }
     .btn-fixed { padding: 12px 16px; font-size: 16px; }
+  }
+</style>
+</head>
+
+<body>
+
+<!-- Pulsanti fissi in alto: HOME + TORNA -->
+<div class="fixed-actions">
+  <a class="btn-fixed btn-home" href="https://balza1979>
+  <a class="btn-fixed btn-back" href="#" onclick="history.back(); return false;"ntrato -->
+<div class="hint">
+  <span class="hint-title">Descrizione comandi</span>
+  <p><b>Vedi/Scarica</b>: apre o scarica il PDF in base al browser</p>
+  <p><b>Vedi Online</b>: visualizza sempre online; attende ~5 secondi per i controlli</p>
+</div>
+
+<div id="pdf-container"></div>
+
+<!-- Popup caricamento -->
+<div id="loadingPopup">
+  ⏳ Caricamento del documento...
+  <span id="loadingSub">Attendere qualche secondo</span>
+</div>
+
+<!-- iframe invisibile per test -->
+<iframe id="testFrame"></iframe>
+
+<script>
+(function () {
+  // Calcola la base del sito per GitHub Pages: https://username.github.io/<repo>
+  const pathParts = window.location.pathname.split("/").filter(Boolean);
+  const siteRoot = pathParts.length > 0 ? `/${pathParts[0]}` : "";
+  const siteBase = window.location.origin + siteRoot;
+
+  const qs = new URLSearchParams(window.location.search);
+  const cartella = qs.get("cartella") || "";             // nome cartella
+  const ts = qs.get("ts") || Date.now();
+
+  // Titolo pagina
+  const titolo = document.getElementById("titolo");
+  titolo.textContent = cartella ? ("PDF in: " + cartella) : "PDF";
+
+  // Caricamento elenco.json (alla root del sito)
+  fetch(`${siteBase}/elenco.json?ts=${encodeURIComponent(ts)}`)
+    .then(r => {
+      if (!r.ok) throw new Error("Impossibile leggere elenco.json");
+      return r.json();
+    })
+    .then(data => {
+      const arr = (data && data[cartella]) || [];
+      const container = document.getElementById("pdf-container");
+
+      if (!Array.isArray(arr) || arr.length === 0) {
+        const info = document.createElement("div");
+        info.className = "empty";
+        info.textContent = cartella
+          ? `Nessun PDF trovato nella cartella: ${cartella}`
+          : "Nessun PDF disponibile. Specificare il parametro ?cartella=...";
+        container.appendChild(info);
+        return;
+      }
+
+      arr.forEach(pdf => {
+        const encodedName = encodeURIComponent(pdf);
+        const encodedFolder = encodeURIComponent(cartella);
+
+        // Link assoluti alla radice del sito/progetto
+        const directUrl = `${siteBase}/pdf/${encodedFolder}/${encodedName}`;
+        const gviewUrl  = `https://docs.google.com/gview?embedded=1&url=${encodeURIComponent(directUrl)}`;
+
+        // Card
+        const card = document.createElement("div");
+        card.className = "card";
+
+        const titleDiv = document.createElement("div");
+        titleDiv.className = "card-title";
+        titleDiv.textContent = `📄 ${pdf}`;
+
+        const btnCol = document.createElement("div");
+        btnCol.className = "button-column";
+
+        const b1 = document.createElement("button");
+        b1.textContent = "Vedi/Scarica";
+        b1.onclick = () => openFast(directUrl);
+
+        const b2 = document.createElement("button");
+        b2.textContent = "Vedi Online";
+        b2.onclick = () => openSafe(directUrl, gviewUrl);
+
+        btnCol.appendChild(b1);
+        btnCol.appendChild(b2);
+
+        card.appendChild(titleDiv);
+        card.appendChild(btnCol);
+        container.appendChild(card);
+      });
+    })
+    .catch(err => {
+      const container = document.getElementById("pdf-container");
+      const info = document.createElement("div");
+      info.className = "error";
+      info.textContent = "Errore nel caricamento dell'elenco: " + (err && err.message ? err.message : err);
+      container.appendChild(info);
+    });
+
+  // URL pagina di "loading" (alla root del sito)
+  const loadingURL = siteBase + "/loading.html";
+
+  // 🔵 VEDI/SCARICA
+  function openFast(url) {
+    window.open(url, "_blank", "noopener");
+  }
+
+  // 🟢 VEDI ONLINE
+  function openSafe(directUrl, gviewUrl) {
+    const newTab = window.open(loadingURL, "_blank", "noopener");
+    if (!newTab) {
+      // Popup bloccato: fallback a Google Viewer direttamente
+      window.open(gviewUrl, "_blank", "noopener");
+      return;
+    }
+
+    showLoading(true, "Caricamento del documento...", "Attendere qualche secondo");
+
+    const frame = document.getElementById("testFrame");
+    frame.src = "about:blank";
+    frame.src = directUrl;
+
+    setTimeout(() => {
+      let loaded = false;
+      try {
+        loaded = frame.contentWindow && frame.contentWindow.location && frame.contentWindow.location.href !== "about:blank";
+      } catch (e) {
+        loaded = false; // cross-origin: consideriamo non caricato
+      }
+
+      showLoading(false);
+      newTab.location.href = loaded ? directUrl : gviewUrl;
+    }, 5000);
+  }
+
+  // Popup
+  function showLoading(show, title = "", subtitle = "") {
+    const popup = document.getElementById("loadingPopup");
+    const sub = document.getElementById("loadingSub");
+    popup.style.display = show ? "block" : "none";
+    if (title) popup.childNodes[0].textContent = "⏳ " + title;
+    if (subtitle) sub.textContent = subtitle;
+  }
+})();
+</script>
+
+</body>
+</html>
