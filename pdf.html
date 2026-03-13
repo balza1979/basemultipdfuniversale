@@ -11,10 +11,9 @@
 <style>
   :root{
     --green:#28a745;
-    --blue:#0275d8; /* tenuto se in futuro vorrai riusarlo */
     --danger:#d9534f;
     --card-bg:#f0f0f0;
-    --name-bg:#e6e6e6; /* sfondo grigio del nome PDF */
+    --name-bg:#e6e6e6;
   }
 
   body {
@@ -48,7 +47,6 @@
     border-radius: 6px;
     padding: 10px 16px;
     color: white;
-    background: var(--blue);
     font-size: 18px;
     box-shadow: 0 2px 6px rgba(0,0,0,0.25);
   }
@@ -56,7 +54,7 @@
   .btn-back { background: var(--danger); }
 
   main {
-    max-width: 1100px; /* un po' più largo per dare spazio ai nomi lunghi */
+    max-width: 1100px;
     margin: 140px auto 40px auto;
     padding: 10px;
   }
@@ -81,7 +79,7 @@
   .hint-title {
     display:block;
     font-weight: 800;
-    text-align: center;        /* centrato come richiesto */
+    text-align: center;
     font-size: 24px;
     margin-bottom: 8px;
   }
@@ -96,26 +94,24 @@
     border-radius: 10px;
     padding: 18px;
     margin-bottom: 18px;
-    display: grid;                       /* layout a griglia per dare più spazio al nome */
-    grid-template-columns: 1fr auto;     /* nome prende tutto lo spazio, bottoni a destra */
+    display: grid;
+    grid-template-columns: 1fr auto;
     align-items: start;
     gap: 16px;
     box-shadow: 0 3px 12px rgba(0,0,0,0.15);
   }
 
-  /* Campo nome molto più lungo con sfondo grigio */
   .pdf-title {
     font-size: 28px;
     font-weight: bold;
     color: #111;
-    background: var(--name-bg);          /* sfondo grigio richiesto */
+    background: var(--name-bg);
     padding: 12px 14px;
     border-radius: 8px;
     word-break: break-word;
     overflow-wrap: anywhere;
   }
 
-  /* Pulsanti a destra, in colonna */
   .btn-col {
     display: flex;
     flex-direction: column;
@@ -131,11 +127,8 @@
     font-weight: bold;
     cursor: pointer;
     color: white;
-    background: var(--green);  /* entrambi i pulsanti verdi */
+    background: var(--green);
   }
-  /* classi colore lasciate per eventuali usi futuri */
-  .green { background: var(--green); }
-  .blue  { background: var(--green); } /* forzata verde per uniformità */
 
   #testFrame { display: none; }
 
@@ -150,7 +143,7 @@
   /* Responsive */
   @media (max-width: 700px){
     .pdf-row{
-      grid-template-columns: 1fr; /* stack: nome sopra, bottoni sotto */
+      grid-template-columns: 1fr;
     }
     .btn-col{
       min-width: unset;
@@ -167,19 +160,34 @@
 
 <div class="top-bar">
   <div class="top-left">
-    <!-- Tasto Home aggiunto -->
-    <a class="btn btn-home" href="https://balza1979.github.io/Elmi-Documenti/" ariaa pagina precedente -->
-    ./index.html⬅ Torna</a>
+
+    <!-- HOME -->
+    <ttps://balza1979.github.io/Elmi-Documenti/
+      🏠 Home
+    </a>
+
+    <!-- TORNA INDIETRO -->
+    #
+      ⬅ Torna
+    </a>
+
   </div>
+
   <div class="top-right">
-    <!-- Link alla root del sito in nuova scheda (opzionale) -->
-    <a class="btn" href="https://balza1979.github.io/Elmi-Documenti/" target="_blank" rel="noopener noreferrer" aria-label="ApriDF</h1>
+    https://balza1979.github.io/Elmi-Documenti/
+      Sito Elmi-Documenti ↗
+    </a>
+  </div>
+</div>
+
+<main>
+  <h1 id="titolo">PDF</h1>
 
   <div class="hint">
     <span class="hint-title">Descrizione comandi</span>
     <ul>
       <li><b>Vedi/Scarica</b>: apre o scarica il PDF in base al browser</li>
-      <li><b>Vedi Online</b>: apre sempre online tramite Google Viewer (attende 5s per controllo)</li>
+      <li><b>Vedi Online</b>: apre sempre tramite Google Viewer (con attesa di 5 secondi)</li>
     </ul>
   </div>
 
@@ -190,7 +198,7 @@
 
 <script>
 (function () {
-  // Base sito per GitHub Pages
+
   const pathParts = window.location.pathname.split("/").filter(Boolean);
   const siteRoot = pathParts.length > 0 ? `/${pathParts[0]}` : "";
   const siteBase = window.location.origin + siteRoot;
@@ -202,27 +210,22 @@
   const titolo = document.getElementById("titolo");
   titolo.textContent = cart ? ("PDF in: " + cart) : "PDF";
 
-  // Carica elenco
   fetch(`${siteBase}/elenco.json?ts=${encodeURIComponent(ts)}`)
-    .then(r => {
-      if (!r.ok) throw new Error("Impossibile leggere elenco.json");
-      return r.json();
-    })
+    .then(r => r.json())
     .then(data => {
       const arr = (data && data[cart]) || [];
       const container = document.getElementById("pdf-container");
 
-      if (!Array.isArray(arr) || arr.length === 0) {
+      if (!arr.length) {
         const info = document.createElement("div");
         info.className = "empty";
-        info.textContent = cart
-          ? `Nessun PDF trovato nella cartella: ${cart}`
-          : "Nessun PDF disponibile. Specificare il parametro ?cartella=...";
+        info.textContent = "Nessun PDF trovato in questa cartella.";
         container.appendChild(info);
         return;
       }
 
       arr.forEach(pdf => {
+
         const row = document.createElement("div");
         row.className = "pdf-row";
 
@@ -239,18 +242,14 @@
         const direct = `${siteBase}/pdf/${encodedCart}/${encodedName}`;
         const gview  = `https://docs.google.com/gview?embedded=1&url=${encodeURIComponent(direct)}`;
 
-        // Pulsante Vedi/Scarica (verde)
         const b1 = document.createElement("button");
-        b1.className = "action green";
+        b1.className = "action";
         b1.textContent = "Vedi/Scarica";
-        b1.setAttribute("aria-label", `Apri o scarica ${pdf}`);
-        b1.onclick = () => window.open(direct, "_blank", "noopener");
+        b1.onclick = () => window.open(direct, "_blank");
 
-        // Pulsante Vedi Online (verde)
         const b2 = document.createElement("button");
-        b2.className = "action green";
+        b2.className = "action";
         b2.textContent = "Vedi Online";
-        b2.setAttribute("aria-label", `Visualizza online ${pdf} tramite Google Viewer`);
         b2.onclick = () => checkOnline(direct, gview);
 
         col.appendChild(b1);
@@ -260,24 +259,13 @@
         row.appendChild(col);
         container.appendChild(row);
       });
-    })
-    .catch(err => {
-      const container = document.getElementById("pdf-container");
-      const info = document.createElement("div");
-      info.className = "empty";
-      info.textContent = "Errore nel caricamento dell'elenco: " + (err && err.message ? err.message : err);
-      container.appendChild(info);
     });
 
   const loadingURL = siteBase + "/loading.html";
 
   function checkOnline(direct, gview) {
-    const w = window.open(loadingURL, "_blank", "noopener");
-    if (!w) {
-      // Popup bloccato: apri direttamente Google Viewer (fallback)
-      window.open(gview, "_blank", "noopener");
-      return;
-    }
+    const w = window.open(loadingURL, "_blank");
+    if (!w) return;
 
     const frame = document.getElementById("testFrame");
     frame.src = "about:blank";
@@ -285,12 +273,12 @@
 
     setTimeout(() => {
       let ok = false;
-      try {
-        ok = frame.contentWindow && frame.contentWindow.location && frame.contentWindow.location.href !== "about:blank";
-      } catch (e) { /* cross-origin, lascia ok = false */ }
+      try { ok = frame.contentWindow.location.href !== "about:blank"; }
+      catch(e){}
       w.location.href = ok ? direct : gview;
     }, 5000);
   }
+
 })();
 </script>
 
