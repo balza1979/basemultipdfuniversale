@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang='it'>
+<head><meta charset='UTF-8'><title>PDF</title></head>
+<body>
+<a href='./index.html'>⬅ Torna</a>
+<h1 id='titolo'></h1>
+<div id='pdf-container'></div>
+<iframe id='testFrame' style='display:none;'></iframe>
+<script>
+const p=new URLSearchParams(window.location.search);const cart=p.get('cartella');
+document.getElementById('titolo').innerHTML='PDF in: '+cart;
+const base=window.location.origin+window.location.pathname.replace(/\/[^\/]*$/,"");
+const load=base+'/loading.html';
+fetch('elenco.json').then(r=>r.json()).then(data=>{
+ const arr=data[cart];const c=document.getElementById('pdf-container');
+ arr.forEach(pdf=>{
+  const f=encodeURIComponent(pdf);const d=`${base}/pdf/${encodeURIComponent(cart)}/${f}`;
+  const g=`https://docs.google.com/gview?embedded=1&url=${d}`;
+  const div=document.createElement('div');
+  div.innerHTML=`<b>${pdf}</b><br><button onclick="window.open('${d}','_blank')">Vedi/Scarica</button>
+  <button onclick="safe('${d}','${g}')">Vedi Online</button>`;
+  c.appendChild(div);
+ });});
+function safe(d,g){const t=window.open(load,'_blank');if(!t)return;
+ const fr=document.getElementById('testFrame');fr.src=d;
+ setTimeout(()=>{let ok=false;try{ok=fr.contentWindow.location.href!=='about:blank'}catch(e){}
+ t.location.href=ok?d:g;},5000);} 
+</script>
+</body></html>

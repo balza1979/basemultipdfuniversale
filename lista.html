@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang='it'>
+<head><meta charset='UTF-8'><title>PDF</title></head>
+<body>
+<a href='./index.html'>⬅ Torna Indietro</a>
+<h1 id='titolo'></h1>
+<div id='pdf-container'></div>
+<script>
+const p=new URLSearchParams(window.location.search);const c=p.get('cartella');
+document.getElementById('titolo').innerHTML='PDF: '+c;
+fetch('elenco.json').then(r=>r.json()).then(data=>{
+ const arr=data[c];const cont=document.getElementById('pdf-container');
+ arr.forEach(pdf=>{
+  const div=document.createElement('div');
+  div.innerHTML=`<b>${pdf}</b> <button onclick="window.location.href='pdf.html?cartella=${encodeURIComponent(c)}'">Apri</button>`;
+  cont.appendChild(div);
+ });});
+</script>
+</body></html>

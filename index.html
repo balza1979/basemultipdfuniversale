@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang='it'>
+<head>
+<meta charset='UTF-8'>
+<title>Seleziona una Cartella</title>
+<style>
+body { font-family: Arial; margin:0; padding:0; background-image:url('sfondo-elmi-verticale.jpg'); background-size:cover; }
+.home-button{position:fixed;top:15px;right:15px;background:#d9534f;color:#fff;padding:25px 45px;border-radius:6px;font-size:55px;text-decoration:none;font-weight:bold;}
+.card{background:#fff;margin:15px auto;padding:20px;max-width:850px;border-radius:10px;display:flex;justify-content:space-between;align-items:center;}
+</style>
+</head>
+<body>
+<a class='home-button' href='./'>Home</a>
+<h1 style='text-align:center;margin-top:120px;font-size:60px;color:red;'>Seleziona una Cartella</h1>
+<div id='folder-container'></div>
+<script>
+fetch('elenco.json').then(r=>r.json()).then(data=>{
+ const container=document.getElementById('folder-container');
+ Object.keys(data).forEach(cartella=>{
+  const card=document.createElement('div');card.className='card';
+  card.innerHTML=`<span style='font-size:45px;color:red;font-weight:700;'>${cartella}</span>
+  <button style='padding:20px 40px;background:#28a745;color:#fff;font-size:22px;font-weight:700;border:none;border-radius:6px;' onclick="window.location.href='pdf.html?cartella=${encodeURIComponent(cartella)}'">Apri</button>`;
+  container.appendChild(card);
+ });});
+</script>
+</body></html>
