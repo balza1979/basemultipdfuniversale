@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <title>PDF</title>
 
-<!-- Anti-cache lato client (aiuta su GitHub Pages) -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
 <meta http-equiv="Expires" content="0" />
@@ -20,7 +19,6 @@
     min-height: 100vh;
   }
 
-  /* Barra comandi in alto */
   .top-bar {
     position: fixed; top: 15px; left: 15px; right: 15px;
     display: flex; justify-content: space-between; align-items: center;
@@ -28,7 +26,6 @@
   }
 
   .btn {
-    display: inline-block;
     text-decoration: none;
     font-weight: bold;
     border-radius: 6px;
@@ -46,166 +43,168 @@
   main {
     max-width: 900px;
     margin: 120px auto 40px auto;
-    padding: 10px 10px 40px 10px;
+    padding: 10px;
   }
 
   h1 {
     text-align: center;
     color: red;
     font-size: 48px;
-    margin: 30px 0 10px 0;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.15);
+    margin: 16px 0 8px 0;
   }
 
-  .hint {
+  .status {
     max-width: 900px;
-    margin: 0 auto 20px auto;
-    background: rgba(255, 255, 255, 0.85);
+    margin: 0 auto 16px auto;
+    background: rgba(255,255,255,0.9);
     color: #333;
-    padding: 12px 16px;
+    padding: 10px 14px;
     border-radius: 8px;
-    font-size: 16px;
-    line-height: 1.35;
+    font-size: 15px;
+    line-height: 1.4;
     box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    white-space: pre-wrap;
   }
 
   .card {
     background: white;
     padding: 20px;
     margin: 15px auto;
-    max-width: 850px;
     border-radius: 10px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
   }
 
   .file-title {
-    font-size: 24px;
+    font-size: 22px;
     font-weight: 700;
-    color: #111;
-    margin: 0 0 14px 0;
+    margin-bottom: 12px;
     word-break: break-word;
+    color: #111;
   }
 
-  .actions {
-    display: flex; gap: 12px; flex-wrap: wrap;
-  }
+  .actions { display: flex; gap: 10px; flex-wrap: wrap; }
 
-  .btn-action {
-    background: #28a745;
-    color: #fff;
-    border: none;
-    padding: 12px 18px;
+  .actions button {
+    padding: 12px 20px;
+    font-size: 18px;
     border-radius: 6px;
     cursor: pointer;
-    font-size: 18px;
-    font-weight: 700;
-    transition: background 0.2s ease;
+    border: none;
+    color: white;
+    font-weight: bold;
   }
-  .btn-action.secondary {
-    background: #007bff;
-  }
-  .btn-action:hover { filter: brightness(0.92); }
 
-  /* iframe test nascosto */
+  .btn-download { background-color: #28a745; }
+  .btn-view { background-color: #007bff; }
+
   #testFrame { display: none; }
 </style>
 </head>
-
 <body>
 
-<!-- Barra comandi -->
 <div class="top-bar">
   ./index.html⬅ Torna</a>
-  <a class="lza1979.github.io/Elmi-Documenti/Home</a>
+  https://balza1979.github.io/Elmi-Documenti/Home</a>
 </div>
 
 <main>
   <h1 id="titolo">PDF</h1>
-  <div class="hint">
-    <strong>Descrizione comandi:</strong><br>
-    • <em>Vedi/Scarica</em> — apre o scarica a seconda del browser<br>
-    • <em>Vedi Online</em> — forza la visualizzazione via Google Viewer (con un test di 5s)
-  </div>
-
+  <div id="status" class="status">Diagnostica in attesa…</div>
   <div id="pdf-container"></div>
 </main>
 
-<!-- iframe invisibile per test -->
 <iframe id="testFrame"></iframe>
 
 <script>
-(function() {
-  // Parametro cartella
+(function () {
+  const statusBox = document.getElementById('status');
+  const container = document.getElementById('pdf-container');
+
+  function logStatus(msg) {
+    console.log('[pdf.html]', msg);
+    statusBox.textContent = String(msg);
+  }
+
   const qs = new URLSearchParams(window.location.search);
-  const cart = qs.get('cartella') || '';
+  const cart = qs.get("cartella");
+  document.getElementById("titolo").textContent = cart ? ("PDF in: " + cart) : "PDF";
 
-  // Titolo
-  document.getElementById('titolo').textContent = cart ? ('PDF in: ' + cart) : 'PDF';
+  const base = window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, "");
+  const loadingURL = base + "/loading.html";
 
-  // URL base universale (stessa cartella della pagina)
-  const base = window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, '');
-  const loadingURL = base + '/loading.html';
+  const elencoUrl = "elenco.json?ts=" + Date.now();
+  logStatus(`Caricamento: ${elencoUrl}\nCartella richiesta: ${cart || '(mancante)'}\nBase: ${base}`);
 
-  // Anti-cache per elenco.json
-  const elencoUrl = 'elenco.json?ts=' + Date.now();
-
-  // Carico elenco
   fetch(elencoUrl)
-    .then(r => r.json())
+    .then(r => {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    })
     .then(data => {
-      const arr = (data && data[cart]) ? data[cart] : [];
-      const container = document.getElementById('pdf-container');
+      const keys = Object.keys(data || {});
+      logStatus(`Caricato elenco.json OK\nChiavi trovate: ${keys.join(', ') || '(nessuna)'}\nCartella richiesta: ${cart}`);
 
-      if (!arr.length) {
+      if (!cart) {
+        // Nessun parametro cartella -> elenco chiavi cliccabili
+        container.appendChild(buildKeysList(keys));
+        return;
+      }
+
+      const arr = data[cart];
+      if (!Array.isArray(arr)) {
+        // Cartella non presente in elenco.json -> mostra elenco chiavi cliccabili
+        const warn = document.createElement('div');
+        warn.className = 'card';
+        warn.style.color = 'red';
+        warn.textContent = `La cartella "${cart}" non è presente in elenco.json. Scegli una delle cartelle esistenti qui sotto.`;
+        container.appendChild(warn);
+        container.appendChild(buildKeysList(keys));
+        return;
+      }
+
+      if (arr.length === 0) {
         const info = document.createElement('div');
         info.className = 'card';
-        info.textContent = 'Nessun PDF trovato nella cartella: ' + cart;
+        info.textContent = `Nessun PDF nella cartella: ${cart}`;
         container.appendChild(info);
         return;
       }
 
-      arr.forEach(pdfName => {
-        const encodedName = encodeURIComponent(pdfName);
-        const encodedFolder = encodeURIComponent(cart);
-
-        const direct = `${base}/pdf/${encodedFolder}/${encodedName}`;
+      // Crea card per ogni PDF
+      arr.forEach(pdf => {
+        const direct = `${base}/pdf/${encodeURIComponent(cart)}/${encodeURIComponent(pdf)}`;
         const gview  = `https://docs.google.com/gview?embedded=1&url=${direct}`;
 
-        // Costruzione card senza innerHTML
         const card = document.createElement('div');
         card.className = 'card';
 
         const title = document.createElement('div');
         title.className = 'file-title';
-        title.textContent = pdfName;
+        title.textContent = pdf;
 
         const actions = document.createElement('div');
         actions.className = 'actions';
 
-        const btnFast = document.createElement('button');
-        btnFast.className = 'btn-action';
-        btnFast.textContent = 'Vedi/Scarica';
-        btnFast.addEventListener('click', () => {
-          window.open(direct, '_blank');
-        });
+        const btnDownload = document.createElement('button');
+        btnDownload.className = 'btn-download';
+        btnDownload.textContent = 'Vedi/Scarica';
+        btnDownload.addEventListener('click', () => window.open(direct, '_blank'));
 
-        const btnSafe = document.createElement('button');
-        btnSafe.className = 'btn-action secondary';
-        btnSafe.textContent = 'Vedi Online';
-        btnSafe.addEventListener('click', () => openSafe(direct, gview));
+        const btnView = document.createElement('button');
+        btnView.className = 'btn-view';
+        btnView.textContent = 'Vedi Online';
+        btnView.addEventListener('click', () => openSafe(direct, gview));
 
-        actions.appendChild(btnFast);
-        actions.appendChild(btnSafe);
+        actions.appendChild(btnDownload);
+        actions.appendChild(btnView);
 
         card.appendChild(title);
         card.appendChild(actions);
-
         container.appendChild(card);
       });
     })
     .catch(err => {
-      console.error('Errore nel fetch di elenco.json:', err);
-      const container = document.getElementById('pdf-container');
+      logStatus(`ERRORE nel caricamento di elenco.json: ${err.message}\nVerifica che esista in root e che sia JSON valido.`);
       const info = document.createElement('div');
       info.className = 'card';
       info.style.color = 'red';
@@ -213,22 +212,52 @@
       container.appendChild(info);
     });
 
-  // Apertura "sicura": prova direct per 5s, altrimenti gView
-  function openSafe(directUrl, gviewUrl) {
-    const newTab = window.open(loadingURL, '_blank');
-    if (!newTab) return;
+  // costruttore lista chiavi cliccabili
+  function buildKeysList(keys) {
+    const wrap = document.createElement('div');
+    wrap.className = 'card';
+    const title = document.createElement('div');
+    title.className = 'file-title';
+    title.textContent = 'Cartelle disponibili:';
+    wrap.appendChild(title);
+
+    if (!keys.length) {
+      const p = document.createElement('p');
+      p.textContent = 'Nessuna cartella trovata in /pdf oppure elenco.json è vuoto.';
+      wrap.appendChild(p);
+      return wrap;
+    }
+
+    const ul = document.createElement('ul');
+    ul.style.margin = '0';
+    ul.style.paddingLeft = '18px';
+
+    keys.forEach(k => {
+      const li = document.createElement('li');
+      const a = document.createElement('a');
+      a.href = 'pdf.html?cartella=' + encodeURIComponent(k);
+      a.textContent = k;
+      li.appendChild(a);
+      ul.appendChild(li);
+    });
+
+    wrap.appendChild(ul);
+    return wrap;
+  }
+
+  function openSafe(direct, gview) {
+    const w = window.open(loadingURL, '_blank');
+    if (!w) return;
 
     const frame = document.getElementById('testFrame');
-    frame.src = directUrl;
+    frame.src = direct;
 
     setTimeout(() => {
       let ok = false;
-      try {
-        ok = frame.contentWindow.location.href !== 'about:blank';
-      } catch (e) {
-        ok = false;
-      }
-      newTab.location.href = ok ? directUrl : gviewUrl;
+      try { ok = frame.contentWindow.location.href !== 'about:blank'; }
+      catch(e){ ok = false; }
+
+      w.location.href = ok ? direct : gview;
     }, 5000);
   }
 })();
