@@ -3,6 +3,34 @@
 <head>
 <meta charset="UTF-8">
 <title>PDF</title>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    background: #f5f5f5;
+}
+
+h1 {
+    color: red;
+    font-size: 40px;
+}
+
+.card {
+    background: white;
+    padding: 20px;
+    margin: 15px 0;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.card button {
+    margin-right: 10px;
+    padding: 10px 20px;
+    font-size: 18px;
+}
+</style>
+
 </head>
 
 <body>
@@ -12,58 +40,56 @@
 <h1 id="titolo"></h1>
 <div id="pdf-container"></div>
 
-<!-- iframe invisibile per il test sicurezza -->
 <iframe id="testFrame" style="display:none;"></iframe>
 
 <script>
-// Leggo la cartella dalla URL
 const p = new URLSearchParams(window.location.search);
 const cart = p.get("cartella");
-
-// Titolo dinamico
 document.getElementById("titolo").innerHTML = "PDF in: " + cart;
 
-// Percorso base dinamico (universale)
 const base = window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, "");
 const load = base + "/loading.html";
 
-// Carico elenco.json
 fetch("elenco.json")
   .then(r => r.json())
   .then(data => {
     const arr = data[cart];
-    const c = document.getElementById("pdf-container");
+    const container = document.getElementById("pdf-container");
 
     arr.forEach(pdf => {
-      const f = encodeURIComponent(pdf);
-      const d = `${base}/pdf/${encodeURIComponent(cart)}/${f}`;
-      const g = `https://docs.google.com/gview?embedded=1&url=${d}`;
+      const encoded = encodeURIComponent(pdf);
+      const folder = encodeURIComponent(cart);
+
+      const direct = `${base}/pdf/${folder}/${encoded}`;
+      const gview = `https://docs.google.com/gview?embedded=1&url=${direct}`;
 
       const div = document.createElement("div");
+      div.className = "card";
+
       div.innerHTML = `
-        <b>${pdf}</b><br>
-        <button onclick="window.open('${d}', '_blank')">Vedi/Scarica</button>
-        <button onclick="safe('${d}', '${g}')">Vedi Online</button>
+        <b>${pdf}</b><br><br>
+        <button onclick="window.open('${direct}','_blank')">Vedi/Scarica</button>
+        <button onclick="safe('${direct}', '${gview}')">Vedi Online</button>
       `;
-      c.appendChild(div);
+
+      container.appendChild(div);
     });
   });
 
-// Funzione per caricare sicuro
-function safe(d, g) {
-  const t = window.open(load, "_blank");
-  if (!t) return;
+function safe(direct, gview) {
+  const newTab = window.open(load, "_blank");
+  if (!newTab) return;
 
-  const fr = document.getElementById("testFrame");
-  fr.src = d;
+  const frame = document.getElementById("testFrame");
+  frame.src = direct;
 
   setTimeout(() => {
     let ok = false;
     try {
-      ok = fr.contentWindow.location.href !== "about:blank";
+      ok = frame.contentWindow.location.href !== "about:blank";
     } catch (e) {}
 
-    t.location.href = ok ? d : g;
+    newTab.location.href = ok ? direct : gview;
 
   }, 5000);
 }
