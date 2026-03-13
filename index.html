@@ -4,90 +4,51 @@
 <meta charset="UTF-8">
 <title>Seleziona una Cartella</title>
 
+<!-- Anti-cache lato client (aiuta su GitHub Pages) -->
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Expires" content="0" />
+
 <style>
-    body {
-        font-family: Arial, sans-serif;
-        margin: 0;
-        padding: 0;
-        background-image: url('sfondo-elmi-verticale.jpg');
-        background-size: cover;
-        background-position: center top;
-        background-repeat: no-repeat;
-    }
-
-    .home-button {
-        position: fixed;
-        top: 15px;
-        right: 15px;
-        background-color: #d9534f;
-        color: white;
-        padding: 25px 45px;
-        border-radius: 6px;
-        text-decoration: none;
-        font-weight: bold;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-        transition: background-color 0.2s ease;
-        z-index: 999;
-        font-size: 55px;
-    }
-
-    .home-button:hover {
-        background-color: red;
-    }
-
-    h1 {
-        text-align: center;
-        margin-top: 120px;
-        font-size: 60px;
-        color: red;
-    }
-
-    #folder-container {
-        max-width: 900px;
-        margin: 40px auto;
-        padding: 10px;
-        font-size: 55px;
-    }
-
-    .card {
-        background: white;
-        color: red;
-        padding: 20px;
-        margin: 15px auto;
-        max-width: 850px;
-        border-radius: 10px;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .card span {
-        font-size: 45px;
-        font-weight: 700;
-        color: red;
-    }
-
-    .card button {
-        background: #28a745;
-        color: white;
-        border: none;
-        padding: 20px 40px;
-        border-radius: 6px;
-        cursor: pointer;
-        font-size: 22px;
-        font-weight: 700;
-        transition: background 0.2s ease;
-    }
-
-    .card button:hover {
-        background: #1e7e34;
-    }
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0; padding: 0;
+    background-image: url('sfondo-elmi-verticale.jpg');
+    background-size: cover;
+    background-position: center top;
+    background-repeat: no-repeat;
+  }
+  .home-button {
+    position: fixed; top: 15px; right: 15px;
+    background-color: #d9534f; color: #fff;
+    padding: 25px 45px; border-radius: 6px;
+    text-decoration: none; font-weight: bold;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+    transition: background-color 0.2s ease;
+    z-index: 999; font-size: 55px;
+  }
+  .home-button:hover { background-color: red; }
+  h1 { text-align: center; margin-top: 120px; font-size: 60px; color: red; }
+  #folder-container { max-width: 900px; margin: 40px auto; padding: 10px; font-size: 55px; }
+  .card {
+    background: white; color: red; padding: 20px; margin: 15px auto;
+    max-width: 850px; border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .card span { font-size: 45px; font-weight: 700; color: red; }
+  .card button {
+    background: #28a745; color: #fff; border: none;
+    padding: 20px 40px; border-radius: 6px; cursor: pointer;
+    font-size: 22px; font-weight: 700; transition: background 0.2s ease;
+  }
+  .card button:hover { background: #1e7e34; }
 </style>
-
 </head>
+
 <body>
 
+<!-- Home CORRETTO (vero <a>, non testo) -->
 https://balza1979.github.io/Elmi-Documenti/Home</a>
 
 <h1>Seleziona una Cartella</h1>
@@ -95,23 +56,44 @@ https://balza1979.github.io/Elmi-Documenti/Home</a>
 <div id="folder-container"></div>
 
 <script>
-fetch("elenco.json")
-  .then(r => r.json())
-  .then(data => {
-    const container = document.getElementById("folder-container");
+(function() {
+  const container = document.getElementById('folder-container');
 
-    Object.keys(data).forEach(cartella => {
-      const card = document.createElement("div");
-      card.className = "card";
+  // Aggiungo timestamp per forzare il browser a non usare la cache: elenco.json?ts=<millis>
+  const url = 'elenco.json?ts=' + Date.now();
 
-      card.innerHTML = `
-        <span>${cartella}</span>
-        pdf.html?cartella=${encodeURIComponent(cartella)}Apri</button>
-      `;
+  fetch(url)
+    .then(r => r.json())
+    .then(data => {
+      Object.keys(data).forEach(cartella => {
+        // Creo gli elementi senza innerHTML
+        const card = document.createElement('div');
+        card.className = 'card';
 
-      container.appendChild(card);
+        const span = document.createElement('span');
+        span.textContent = cartella;
+
+        const btn = document.createElement('button');
+        btn.textContent = 'Apri';
+        btn.addEventListener('click', () => {
+          const dest = 'pdf.html?cartella=' + encodeURIComponent(cartella);
+          window.location.href = dest;
+        });
+
+        card.appendChild(span);
+        card.appendChild(btn);
+        container.appendChild(card);
+      });
+    })
+    .catch(err => {
+      console.error('Errore nel fetch di elenco.json:', err);
+      const p = document.createElement('p');
+      p.style.color = 'red';
+      p.style.fontSize = '24px';
+      p.textContent = 'Errore nel caricamento di elenco.json';
+      container.appendChild(p);
     });
-  });
+})();
 </script>
 
 </body>
