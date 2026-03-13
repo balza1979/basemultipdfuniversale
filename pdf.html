@@ -9,6 +9,14 @@
 <meta http-equiv="Expires" content="0" />
 
 <style>
+  :root{
+    --green:#28a745;
+    --blue:#0275d8; /* tenuto se in futuro vorrai riusarlo */
+    --danger:#d9534f;
+    --card-bg:#f0f0f0;
+    --name-bg:#e6e6e6; /* sfondo grigio del nome PDF */
+  }
+
   body {
     font-family: Arial, sans-serif;
     margin: 0;
@@ -40,14 +48,15 @@
     border-radius: 6px;
     padding: 10px 16px;
     color: white;
-    background: #0275d8;
+    background: var(--blue);
     font-size: 18px;
     box-shadow: 0 2px 6px rgba(0,0,0,0.25);
   }
-  .btn-home { background: #d9534f; }
+  .btn-home { background: var(--green); }
+  .btn-back { background: var(--danger); }
 
   main {
-    max-width: 900px;
+    max-width: 1100px; /* un po' più largo per dare spazio ai nomi lunghi */
     margin: 140px auto 40px auto;
     padding: 10px;
   }
@@ -62,33 +71,48 @@
   /* Box descrizione */
   .hint {
     background: rgba(255,255,255,0.85);
-    padding: 15px 20px;
+    padding: 18px 22px;
     border-radius: 10px;
     margin-bottom: 25px;
     font-size: 22px;
     line-height: 1.4;
     box-shadow: 0 2px 10px rgba(0,0,0,0.15);
   }
+  .hint-title {
+    display:block;
+    font-weight: 800;
+    text-align: center;        /* centrato come richiesto */
+    font-size: 24px;
+    margin-bottom: 8px;
+  }
+  .hint ul{
+    margin: 8px 0 0 0;
+    padding-left: 20px;
+  }
 
   /* CARD PDF */
   .pdf-row {
-    background: #f0f0f0;
+    background: var(--card-bg);
     border-radius: 10px;
     padding: 18px;
     margin-bottom: 18px;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
+    display: grid;                       /* layout a griglia per dare più spazio al nome */
+    grid-template-columns: 1fr auto;     /* nome prende tutto lo spazio, bottoni a destra */
+    align-items: start;
     gap: 16px;
     box-shadow: 0 3px 12px rgba(0,0,0,0.15);
   }
 
+  /* Campo nome molto più lungo con sfondo grigio */
   .pdf-title {
     font-size: 28px;
     font-weight: bold;
-    color: black;
-    max-width: 60%;
+    color: #111;
+    background: var(--name-bg);          /* sfondo grigio richiesto */
+    padding: 12px 14px;
+    border-radius: 8px;
     word-break: break-word;
+    overflow-wrap: anywhere;
   }
 
   /* Pulsanti a destra, in colonna */
@@ -96,7 +120,7 @@
     display: flex;
     flex-direction: column;
     gap: 14px;
-    min-width: 220px;
+    min-width: 240px;
   }
 
   .action {
@@ -107,10 +131,11 @@
     font-weight: bold;
     cursor: pointer;
     color: white;
+    background: var(--green);  /* entrambi i pulsanti verdi */
   }
-
-  .green { background: #28a745; }
-  .blue  { background: #0275d8; }
+  /* classi colore lasciate per eventuali usi futuri */
+  .green { background: var(--green); }
+  .blue  { background: var(--green); } /* forzata verde per uniformità */
 
   #testFrame { display: none; }
 
@@ -121,6 +146,20 @@
     font-size: 20px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
   }
+
+  /* Responsive */
+  @media (max-width: 700px){
+    .pdf-row{
+      grid-template-columns: 1fr; /* stack: nome sopra, bottoni sotto */
+    }
+    .btn-col{
+      min-width: unset;
+      width: 100%;
+    }
+    .btn-col .action{
+      width: 100%;
+    }
+  }
 </style>
 
 </head>
@@ -128,12 +167,20 @@
 
 <div class="top-bar">
   <div class="top-left">
-    <a class="btn btn-home" href="./index.html" aria-label="Torna alla paginabtn" href="https://balza1979.github.io/Elmi-Documenti/" target="_blank" rel="noopener noreferrer" ariad="titolo">PDF</h1>
+    <!-- Tasto Home aggiunto -->
+    <a class="btn btn-home" href="https://balza1979.github.io/Elmi-Documenti/" ariaa pagina precedente -->
+    ./index.html⬅ Torna</a>
+  </div>
+  <div class="top-right">
+    <!-- Link alla root del sito in nuova scheda (opzionale) -->
+    <a class="btn" href="https://balza1979.github.io/Elmi-Documenti/" target="_blank" rel="noopener noreferrer" aria-label="ApriDF</h1>
 
   <div class="hint">
-    <b>Descrizione comandi:</b><br>
-    • <b>Vedi/Scarica</b>: apre o scarica il PDF in base al browser<br>
-    • <b>Vedi Online</b>: apre sempre online tramite Google Viewer (attende 5s per controllo)
+    <span class="hint-title">Descrizione comandi</span>
+    <ul>
+      <li><b>Vedi/Scarica</b>: apre o scarica il PDF in base al browser</li>
+      <li><b>Vedi Online</b>: apre sempre online tramite Google Viewer (attende 5s per controllo)</li>
+    </ul>
   </div>
 
   <div id="pdf-container"></div>
@@ -143,7 +190,7 @@
 
 <script>
 (function () {
-  // Determina la base del sito per GitHub Pages (repo-name è il primo segmento)
+  // Base sito per GitHub Pages
   const pathParts = window.location.pathname.split("/").filter(Boolean);
   const siteRoot = pathParts.length > 0 ? `/${pathParts[0]}` : "";
   const siteBase = window.location.origin + siteRoot;
@@ -155,9 +202,7 @@
   const titolo = document.getElementById("titolo");
   titolo.textContent = cart ? ("PDF in: " + cart) : "PDF";
 
-  // Se elenco.json sta nella stessa cartella della pagina, puoi usare percorso relativo semplice:
-  // fetch("elenco.json?ts=" + ts)
-  // Se invece è alla radice del sito, usa:
+  // Carica elenco
   fetch(`${siteBase}/elenco.json?ts=${encodeURIComponent(ts)}`)
     .then(r => {
       if (!r.ok) throw new Error("Impossibile leggere elenco.json");
@@ -191,20 +236,19 @@
         const encodedName = encodeURIComponent(pdf);
         const encodedCart = encodeURIComponent(cart);
 
-        // Percorso assoluto riferito alla radice del sito GitHub Pages
         const direct = `${siteBase}/pdf/${encodedCart}/${encodedName}`;
         const gview  = `https://docs.google.com/gview?embedded=1&url=${encodeURIComponent(direct)}`;
 
-        // Pulsante scarica/vedi
+        // Pulsante Vedi/Scarica (verde)
         const b1 = document.createElement("button");
         b1.className = "action green";
         b1.textContent = "Vedi/Scarica";
         b1.setAttribute("aria-label", `Apri o scarica ${pdf}`);
         b1.onclick = () => window.open(direct, "_blank", "noopener");
 
-        // Pulsante online
+        // Pulsante Vedi Online (verde)
         const b2 = document.createElement("button");
-        b2.className = "action blue";
+        b2.className = "action green";
         b2.textContent = "Vedi Online";
         b2.setAttribute("aria-label", `Visualizza online ${pdf} tramite Google Viewer`);
         b2.onclick = () => checkOnline(direct, gview);
@@ -225,33 +269,25 @@
       container.appendChild(info);
     });
 
-  // URL della pagina "loading" (qui ipotizzo sia accanto a questa pagina)
   const loadingURL = siteBase + "/loading.html";
 
   function checkOnline(direct, gview) {
     const w = window.open(loadingURL, "_blank", "noopener");
     if (!w) {
-      // Popup bloccato: apri direttamente Google Viewer (comportamento di fallback)
+      // Popup bloccato: apri direttamente Google Viewer (fallback)
       window.open(gview, "_blank", "noopener");
       return;
     }
 
     const frame = document.getElementById("testFrame");
-    // Reset a about:blank prima di testare
     frame.src = "about:blank";
-
-    // Carica il PDF diretto nell'iframe (se stessa origine il test ha più chance di funzionare)
     frame.src = direct;
 
     setTimeout(() => {
       let ok = false;
       try {
-        // In ambienti same-origin questo può funzionare
         ok = frame.contentWindow && frame.contentWindow.location && frame.contentWindow.location.href !== "about:blank";
-      } catch (e) {
-        // Cross-origin o PDF viewer che impedisce l’accesso: lascia ok = false
-      }
-      // Se ok, vai diretto, altrimenti Google Viewer
+      } catch (e) { /* cross-origin, lascia ok = false */ }
       w.location.href = ok ? direct : gview;
     }, 5000);
   }
