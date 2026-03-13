@@ -9,278 +9,169 @@
 <meta http-equiv="Expires" content="0" />
 
 <style>
-  :root{
-    --green:#28a745;
-    --danger:#d9534f;
-    --card-bg:#f0f0f0;
-    --name-bg:#e6e6e6;
-  }
-
+  /* === STILE PRESO DAL TUO ESEMPIO (adattato) === */
   body {
     font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background-image: url('sfondo-elmi-verticale.jpg');
+    background: black;                 /* SFONDO NERO come richiesto */
     background-size: cover;
     background-position: center top;
     background-repeat: no-repeat;
-    min-height: 100vh;
-  }
-
-  /* Barra comandi */
-  .top-bar {
-    position: fixed;
-    top: 15px;
-    left: 15px;
-    right: 15px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    z-index: 999;
-    gap: 10px;
-  }
-  .top-left, .top-right { display: flex; gap: 10px; align-items: center; }
-
-  .btn {
-    text-decoration: none;
-    font-weight: bold;
-    border-radius: 6px;
-    padding: 10px 16px;
-    color: white;
-    font-size: 18px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-  }
-  .btn-home { background: var(--green); }
-  .btn-back { background: var(--danger); }
-
-  main {
-    max-width: 1100px;
-    margin: 140px auto 40px auto;
-    padding: 10px;
+    margin: 0;
+    padding: 40px;
   }
 
   h1 {
+    text-align: center;
     color: red;
-    font-size: 50px;
-    text-align: center;
-    margin-bottom: 10px;
-  }
-
-  /* Box descrizione */
-  .hint {
-    background: rgba(255,255,255,0.85);
-    padding: 18px 22px;
-    border-radius: 10px;
-    margin-bottom: 25px;
-    font-size: 22px;
-    line-height: 1.4;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.15);
-  }
-  .hint-title {
-    display:block;
-    font-weight: 800;
-    text-align: center;
-    font-size: 24px;
-    margin-bottom: 8px;
-  }
-  .hint ul{
-    margin: 8px 0 0 0;
-    padding-left: 20px;
-  }
-
-  /* CARD PDF */
-  .pdf-row {
-    background: var(--card-bg);
-    border-radius: 10px;
-    padding: 18px;
-    margin-bottom: 18px;
-    display: grid;
-    grid-template-columns: 1fr auto;
-    align-items: start;
-    gap: 16px;
-    box-shadow: 0 3px 12px rgba(0,0,0,0.15);
-  }
-
-  .pdf-title {
-    font-size: 28px;
     font-weight: bold;
-    color: #111;
-    background: var(--name-bg);
-    padding: 12px 14px;
-    border-radius: 8px;
+    font-size: 26px;
+    margin: 0 0 20px 0;
+  }
+
+  /* Pulsanti fissi in alto (Home + Torna) */
+  .fixed-actions {
+    position: fixed;
+    top: 15px;
+    right: 15px;
+    display: flex;
+    gap: 10px;
+    z-index: 999;
+  }
+  .btn-fixed {
+    display: inline-block;
+    text-decoration: none;
+    font-weight: bold;
+    border-radius: 6px;
+    padding: 16px 22px;
+    color: white;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+    font-size: 20px;
+    transition: background-color 0.2s ease;
+  }
+  .btn-home { background-color: #28a745; }     /* verde pieno, come richiesto */
+  .btn-home:hover { background-color: #218838; }
+  .btn-back { background-color: #0275d8; }     /* blu come nel tuo esempio */
+  .btn-back:hover { background-color: #025aa5; }
+
+  /* CARD LAYOUT (come tuo esempio) */
+  .card {
+    background: grey;      /* card grigia */
+    padding: 20px;
+    margin: 15px auto;
+    max-width: 950px;      /* un po’ più largo per nomi lunghi */
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .card-title {
+    font-size: 36px;
+    font-weight: 700;
+    color: black;
+    max-width: 65%;
     word-break: break-word;
     overflow-wrap: anywhere;
   }
 
-  .btn-col {
+  /* Pulsanti in colonna a destra */
+  .button-column {
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 15px;
     min-width: 240px;
   }
 
-  .action {
-    padding: 16px 26px;
-    border: none;
-    border-radius: 8px;
-    font-size: 20px;
-    font-weight: bold;
-    cursor: pointer;
+  .card button {
+    background: green;           /* pulsanti verdi */
     color: white;
-    background: var(--green);
+    border: none;
+    padding: 16px 28px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 22px;
+    font-weight: 700;
+    width: 240px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+    transition: background-color 0.15s ease;
+  }
+  .card button:hover {
+    background: #1e7e34;         /* verde più scuro al hover */
   }
 
+  /* Box “Descrizione comandi” centrato (stile semplice) */
+  .hint {
+    background: #222;
+    color: #fff;
+    padding: 18px 22px;
+    border-radius: 10px;
+    margin: 10px auto 20px auto;
+    max-width: 950px;
+    text-align: center;          /* centrato */
+  }
+  .hint-title {
+    display: block;
+    font-weight: 800;
+    font-size: 24px;
+    margin-bottom: 6px;
+    color: #fff;
+  }
+  .hint p {
+    margin: 6px 0;
+    font-size: 18px;
+    line-height: 1.35;
+    color: #eee;
+  }
+
+  /* Popup centrale (come tuo esempio) */
+  #loadingPopup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 30px 50px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+    font-size: 28px;
+    font-weight: bold;
+    display: none;
+    z-index: 2000;
+    text-align: center;
+    color: black;
+  }
+  #loadingPopup span {
+    display: block;
+    margin-top: 15px;
+    font-size: 22px;
+    font-weight: normal;
+  }
+
+  /* iframe invisibile per il test */
   #testFrame { display: none; }
 
-  .empty {
-    background: rgba(255,255,255,0.85);
+  /* Messaggi */
+  .empty, .error {
+    background: #222;
+    color: #fff;
     padding: 16px 20px;
     border-radius: 10px;
-    font-size: 20px;
+    margin: 10px auto;
+    max-width: 950px;
+    font-size: 18px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
   }
 
   /* Responsive */
-  @media (max-width: 700px){
-    .pdf-row{
-      grid-template-columns: 1fr;
+  @media (max-width: 700px) {
+    body { padding: 20px; }
+    .card {
+      flex-direction: column;
+      align-items: stretch;
     }
-    .btn-col{
-      min-width: unset;
-      width: 100%;
-    }
-    .btn-col .action{
-      width: 100%;
-    }
-  }
-</style>
-
-</head>
-<body>
-
-<div class="top-bar">
-  <div class="top-left">
-
-    <!-- HOME -->
-    <ttps://balza1979.github.io/Elmi-Documenti/
-      🏠 Home
-    </a>
-
-    <!-- TORNA INDIETRO -->
-    #
-      ⬅ Torna
-    </a>
-
-  </div>
-
-  <div class="top-right">
-    https://balza1979.github.io/Elmi-Documenti/
-      Sito Elmi-Documenti ↗
-    </a>
-  </div>
-</div>
-
-<main>
-  <h1 id="titolo">PDF</h1>
-
-  <div class="hint">
-    <span class="hint-title">Descrizione comandi</span>
-    <ul>
-      <li><b>Vedi/Scarica</b>: apre o scarica il PDF in base al browser</li>
-      <li><b>Vedi Online</b>: apre sempre tramite Google Viewer (con attesa di 5 secondi)</li>
-    </ul>
-  </div>
-
-  <div id="pdf-container"></div>
-</main>
-
-<iframe id="testFrame"></iframe>
-
-<script>
-(function () {
-
-  const pathParts = window.location.pathname.split("/").filter(Boolean);
-  const siteRoot = pathParts.length > 0 ? `/${pathParts[0]}` : "";
-  const siteBase = window.location.origin + siteRoot;
-
-  const qs = new URLSearchParams(window.location.search);
-  const cart = qs.get("cartella") || "";
-  const ts = qs.get("ts") || Date.now();
-
-  const titolo = document.getElementById("titolo");
-  titolo.textContent = cart ? ("PDF in: " + cart) : "PDF";
-
-  fetch(`${siteBase}/elenco.json?ts=${encodeURIComponent(ts)}`)
-    .then(r => r.json())
-    .then(data => {
-      const arr = (data && data[cart]) || [];
-      const container = document.getElementById("pdf-container");
-
-      if (!arr.length) {
-        const info = document.createElement("div");
-        info.className = "empty";
-        info.textContent = "Nessun PDF trovato in questa cartella.";
-        container.appendChild(info);
-        return;
-      }
-
-      arr.forEach(pdf => {
-
-        const row = document.createElement("div");
-        row.className = "pdf-row";
-
-        const title = document.createElement("div");
-        title.className = "pdf-title";
-        title.textContent = pdf;
-
-        const col = document.createElement("div");
-        col.className = "btn-col";
-
-        const encodedName = encodeURIComponent(pdf);
-        const encodedCart = encodeURIComponent(cart);
-
-        const direct = `${siteBase}/pdf/${encodedCart}/${encodedName}`;
-        const gview  = `https://docs.google.com/gview?embedded=1&url=${encodeURIComponent(direct)}`;
-
-        const b1 = document.createElement("button");
-        b1.className = "action";
-        b1.textContent = "Vedi/Scarica";
-        b1.onclick = () => window.open(direct, "_blank");
-
-        const b2 = document.createElement("button");
-        b2.className = "action";
-        b2.textContent = "Vedi Online";
-        b2.onclick = () => checkOnline(direct, gview);
-
-        col.appendChild(b1);
-        col.appendChild(b2);
-
-        row.appendChild(title);
-        row.appendChild(col);
-        container.appendChild(row);
-      });
-    });
-
-  const loadingURL = siteBase + "/loading.html";
-
-  function checkOnline(direct, gview) {
-    const w = window.open(loadingURL, "_blank");
-    if (!w) return;
-
-    const frame = document.getElementById("testFrame");
-    frame.src = "about:blank";
-    frame.src = direct;
-
-    setTimeout(() => {
-      let ok = false;
-      try { ok = frame.contentWindow.location.href !== "about:blank"; }
-      catch(e){}
-      w.location.href = ok ? direct : gview;
-    }, 5000);
-  }
-
-})();
-</script>
-
-</body>
-</html>
+    .card-title { max-width: 100%; font-size: 28px; }
+    .button-column { min-width: unset; width: 100%; }
+    .card button { width: 100%; }
+    .btn-fixed { padding: 12px 16px; font-size: 16px; }
