@@ -23,13 +23,13 @@ iframe {
 const params = new URLSearchParams(window.location.search);
 const file = params.get("file");
 
-// Ottiene automaticamente la cartella corrente
+// Percorso base automatico
 const baseURL = window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, "");
 
-// URL completo del PDF
+// URL del PDF su Google Viewer
 const pdfUrl = `https://docs.google.com/gview?embedded=1&url=${baseURL}/pdf/${file}`;
 
-// Inserisce l’iframe
+// Inserisce l'iframe CORRETTAMENTE
 document.write(`${pdfUrl}</iframe>`);
 </script>
 
