@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-<meta charset="UTF-8" />
+<meta charset="UTF-8">
 <title>PDF</title>
 
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
@@ -9,11 +9,12 @@
 <meta http-equiv="Expires" content="0" />
 
 <style>
-  /* === STILE PRESO DAL TUO ESEMPIO (adattato) === */
+  /* === STILE IDENTICO AL FILE DI RIFERIMENTO === */
   body {
     font-family: Arial, sans-serif;
-    background: black;                 /* SFONDO NERO come richiesto */
+    /* background-image: url('sfondo-elmi-verticale.jpg'); */
     background-size: cover;
+    background: black;                 /* sfondo nero */
     background-position: center top;
     background-repeat: no-repeat;
     margin: 0;
@@ -28,37 +29,32 @@
     margin: 0 0 20px 0;
   }
 
-  /* Pulsanti fissi in alto (Home + Torna) */
-  .fixed-actions {
+  /* Pulsante fisso in alto a destra (come il tuo back-button) */
+  .back-button {
     position: fixed;
     top: 15px;
     right: 15px;
-    display: flex;
-    gap: 10px;
-    z-index: 999;
-  }
-  .btn-fixed {
-    display: inline-block;
+    background-color: #0275d8;   /* blu */
+    color: white;
+    padding: 20px 28px;
+    border-radius: 6px;
     text-decoration: none;
     font-weight: bold;
-    border-radius: 6px;
-    padding: 16px 22px;
-    color: white;
     box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-    font-size: 20px;
     transition: background-color 0.2s ease;
+    z-index: 999;
+    font-size: 26px;
   }
-  .btn-home { background-color: #28a745; }     /* verde pieno, come richiesto */
-  .btn-home:hover { background-color: #218838; }
-  .btn-back { background-color: #0275d8; }     /* blu come nel tuo esempio */
-  .btn-back:hover { background-color: #025aa5; }
+  .back-button:hover {
+    background-color: #025aa5;
+  }
 
-  /* CARD LAYOUT (come tuo esempio) */
+  /* CARD LAYOUT (grigia, grande, semplice) */
   .card {
-    background: grey;      /* card grigia */
+    background: grey;
     padding: 20px;
     margin: 15px auto;
-    max-width: 950px;      /* un po’ più largo per nomi lunghi */
+    max-width: 950px;      /* un filo più largo per nomi lunghi */
     border-radius: 10px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     display: flex;
@@ -81,6 +77,7 @@
     display: flex;
     flex-direction: column;
     gap: 15px;
+    color: green; /* come nel tuo esempio */
     min-width: 240px;
   }
 
@@ -97,35 +94,12 @@
     box-shadow: 0 2px 6px rgba(0,0,0,0.25);
     transition: background-color 0.15s ease;
   }
+  /* Nel tuo esempio l'hover era blu (#0056b3); lo mantengo uguale */
   .card button:hover {
-    background: #1e7e34;         /* verde più scuro al hover */
+    background: #0056b3;
   }
 
-  /* Box “Descrizione comandi” centrato (stile semplice) */
-  .hint {
-    background: #222;
-    color: #fff;
-    padding: 18px 22px;
-    border-radius: 10px;
-    margin: 10px auto 20px auto;
-    max-width: 950px;
-    text-align: center;          /* centrato */
-  }
-  .hint-title {
-    display: block;
-    font-weight: 800;
-    font-size: 24px;
-    margin-bottom: 6px;
-    color: #fff;
-  }
-  .hint p {
-    margin: 6px 0;
-    font-size: 18px;
-    line-height: 1.35;
-    color: #eee;
-  }
-
-  /* Popup centrale (come tuo esempio) */
+  /* Popup centrale (identico allo stile del tuo esempio) */
   #loadingPopup {
     position: fixed;
     top: 50%;
@@ -149,7 +123,7 @@
     font-weight: normal;
   }
 
-  /* iframe invisibile per il test */
+  /* iframe invisibile per il test PDF */
   #testFrame { display: none; }
 
   /* Messaggi */
@@ -164,32 +138,22 @@
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
   }
 
-  /* Responsive */
+  /* Responsivo */
   @media (max-width: 700px) {
     body { padding: 20px; }
-    .card {
-      flex-direction: column;
-      align-items: stretch;
-    }
+    .card { flex-direction: column; align-items: stretch; }
     .card-title { max-width: 100%; font-size: 28px; }
     .button-column { min-width: unset; width: 100%; }
     .card button { width: 100%; }
-    .btn-fixed { padding: 12px 16px; font-size: 16px; }
+    .back-button { padding: 14px 18px; font-size: 18px; }
   }
 </style>
 </head>
 
 <body>
 
-<!-- Pulsanti fissi in alto: HOME + TORNA -->
-<div class="fixed-actions">
-  <a class="btn-fixed btn-home" href="https://balza1979>
-  <a class="btn-fixed btn-back" href="#" onclick="history.back(); return false;"ntrato -->
-<div class="hint">
-  <span class="hint-title">Descrizione comandi</span>
-  <p><b>Vedi/Scarica</b>: apre o scarica il PDF in base al browser</p>
-  <p><b>Vedi Online</b>: visualizza sempre online; attende ~5 secondi per i controlli</p>
-</div>
+<!-- Pulsante "Torna Indietro" come nel file di stile -->
+<a class="back-button" href="./index1 id="titolo">PDF</h1>
 
 <div id="pdf-container"></div>
 
@@ -204,20 +168,20 @@
 
 <script>
 (function () {
-  // Calcola la base del sito per GitHub Pages: https://username.github.io/<repo>
+  /* Base del sito per GitHub Pages (https://username.github.io/<repo>) */
   const pathParts = window.location.pathname.split("/").filter(Boolean);
   const siteRoot = pathParts.length > 0 ? `/${pathParts[0]}` : "";
   const siteBase = window.location.origin + siteRoot;
 
   const qs = new URLSearchParams(window.location.search);
-  const cartella = qs.get("cartella") || "";             // nome cartella
+  const cartella = qs.get("cartella") || "";            // nome cartella
   const ts = qs.get("ts") || Date.now();
 
-  // Titolo pagina
+  // Titolo
   const titolo = document.getElementById("titolo");
   titolo.textContent = cartella ? ("PDF in: " + cartella) : "PDF";
 
-  // Caricamento elenco.json (alla root del sito)
+  // Carico elenco.json dalla root del sito (stile tuo progetto)
   fetch(`${siteBase}/elenco.json?ts=${encodeURIComponent(ts)}`)
     .then(r => {
       if (!r.ok) throw new Error("Impossibile leggere elenco.json");
@@ -241,11 +205,11 @@
         const encodedName = encodeURIComponent(pdf);
         const encodedFolder = encodeURIComponent(cartella);
 
-        // Link assoluti alla radice del sito/progetto
+        // Link ai PDF (radice del sito)
         const directUrl = `${siteBase}/pdf/${encodedFolder}/${encodedName}`;
         const gviewUrl  = `https://docs.google.com/gview?embedded=1&url=${encodeURIComponent(directUrl)}`;
 
-        // Card
+        // Card (identica allo stile del file di riferimento)
         const card = document.createElement("div");
         card.className = "card";
 
@@ -280,19 +244,19 @@
       container.appendChild(info);
     });
 
-  // URL pagina di "loading" (alla root del sito)
+  // Pagina di loading alla root (come nel tuo progetto)
   const loadingURL = siteBase + "/loading.html";
 
-  // 🔵 VEDI/SCARICA
+  // Vedi/Scarica (apre diretto)
   function openFast(url) {
     window.open(url, "_blank", "noopener");
   }
 
-  // 🟢 VEDI ONLINE
+  // Vedi Online (test con iframe + fallback a Google Viewer)
   function openSafe(directUrl, gviewUrl) {
     const newTab = window.open(loadingURL, "_blank", "noopener");
     if (!newTab) {
-      // Popup bloccato: fallback a Google Viewer direttamente
+      // Popup bloccato -> vai diretto su Google Viewer
       window.open(gviewUrl, "_blank", "noopener");
       return;
     }
