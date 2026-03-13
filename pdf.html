@@ -2,64 +2,197 @@
 <html lang="it">
 <head>
 <meta charset="UTF-8">
-<title>PDF – TEST</title>
+<title>PDF</title>
+
+<!-- Anti-cache lato client -->
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Expires" content="0" />
 
 <style>
   body {
     font-family: Arial, sans-serif;
-    padding: 20px;
-    background: white;
+    margin: 0; padding: 0;
+    background-image: url('sfondo-elmi-verticale.jpg');
+    background-size: cover;
+    background-position: center top;
+    background-repeat: no-repeat;
+    min-height: 100vh;
+  }
+
+  .top-bar {
+    position: fixed; top: 15px; left: 15px; right: 15px;
+    display: flex; justify-content: space-between; align-items: center;
+    z-index: 999;
+  }
+
+  .btn {
+    text-decoration: none;
+    font-weight: bold;
+    border-radius: 6px;
+    padding: 14px 22px;
+    color: #fff;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+    transition: background-color 0.2s ease;
+    font-size: 20px;
+  }
+  .btn-back { background-color: #0275d8; }
+  .btn-back:hover { background-color: #025aa5; }
+  .btn-home { background-color: #d9534f; }
+  .btn-home:hover { background-color: #c9302c; }
+
+  main {
+    max-width: 900px;
+    margin: 120px auto 40px auto;
+    padding: 10px;
+  }
+
+  h1 {
+    text-align: center;
+    color: red;
+    font-size: 48px;
+    margin: 16px 0 8px 0;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.15);
   }
 
   .card {
-    background: #f3f3f3;
+    background: white;
     padding: 20px;
-    margin: 15px 0;
-    border-radius: 8px;
-    border: 1px solid #ccc;
+    margin: 15px auto;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
   }
 
-  .card button {
-    padding: 10px 20px;
-    font-size: 18px;
-    margin-top: 10px;
+  .file-title {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    word-break: break-word;
+    color: #111;
   }
+
+  .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+  .actions button {
+    padding: 12px 20px;
+    font-size: 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    border: none;
+    color: white;
+    font-weight: bold;
+  }
+
+  .btn-download { background-color: #28a745; }
+  .btn-view { background-color: #007bff; }
+
+  #testFrame { display: none; }
 </style>
 </head>
-
 <body>
 
-<h1 id="titolo">TEST PDF</h1>
-<div id="pdf-container"></div>
+<div class="top-bar">
+  ./index.html⬅ Torna</a>
+  https://balza1979.github.io/Elmi-Documenti/Home</a>
+</div>
+
+<main>
+  <h1 id="titolo">PDF</h1>
+  <div id="pdf-container"></div>
+</main>
+
+<iframe id="testFrame"></iframe>
 
 <script>
-const qs = new URLSearchParams(window.location.search);
-const cart = qs.get("cartella");
+(function () {
+  // Parametri: cartella e (facoltativo) ts passato dall'index
+  const qs = new URLSearchParams(window.location.search);
+  const cart = qs.get("cartella") || "";
+  const tsFromIndex = qs.get("ts") || Date.now(); // se non arriva, ne genero uno
 
-document.getElementById("titolo").textContent = "Cartella: " + cart;
+  document.getElementById("titolo").textContent = cart ? ("PDF in: " + cart) : "PDF";
 
-fetch("elenco.json?ts=" + Date.now())
-  .then(r => r.json())
-  .then(data => {
-    const arr = data[cart] || [];
-    const container = document.getElementById("pdf-container");
+  // Base path "universale" (stessa cartella della pagina)
+  const base = window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, "");
+  const loadingURL = base + "/loading.html";
 
-    arr.forEach(pdf => {
-      const div = document.createElement("div");
-      div.className = "card";
+  // Bucare la cache di elenco.json
+  const elencoUrl = "elenco.json?ts=" + tsFromIndex;
 
-      const title = document.createElement("div");
-      title.textContent = pdf;
+  fetch(elencoUrl)
+    .then(r => r.json())
+    .then(data => {
+      const arr = (data && data[cart]) ? data[cart] : [];
+      const container = document.getElementById("pdf-container");
 
-      const btn = document.createElement("button");
-      btn.textContent = "Apri PDF";
-      btn.onclick = () => alert("Hai cliccato: " + pdf);
+      if (!arr.length) {
+        const info = document.createElement('div');
+        info.className = 'card';
+        info.style.color = 'red';
+        info.textContent = cart 
+          ? (`Nessun PDF trovato nella cartella: ${cart}`)
+          : 'Parametro "cartella" mancante.';
+        container.appendChild(info);
+        return;
+      }
 
-      div.appendChild(title);
-      div.appendChild(btn);
-      container.appendChild(div);
+      arr.forEach(pdf => {
+        const direct = `${base}/pdf/${encodeURIComponent(cart)}/${encodeURIComponent(pdf)}`;
+        const gview  = `https://docs.google.com/gview?embedded=1&url=${direct}`;
+
+        const card = document.createElement('div');
+        card.className = 'card';
+
+        const title = document.createElement('div');
+        title.className = 'file-title';
+        title.textContent = pdf;
+
+        const actions = document.createElement('div');
+        actions.className = 'actions';
+
+        const btnDownload = document.createElement('button');
+        btnDownload.className = 'btn-download';
+        btnDownload.textContent = 'Vedi/Scarica';
+        btnDownload.addEventListener('click', () => window.open(direct, '_blank'));
+
+        const btnView = document.createElement('button');
+        btnView.className = 'btn-view';
+        btnView.textContent = 'Vedi Online';
+        btnView.addEventListener('click', () => openSafe(direct, gview));
+
+        actions.appendChild(btnDownload);
+        actions.appendChild(btnView);
+
+        card.appendChild(title);
+        card.appendChild(actions);
+        container.appendChild(card);
+      });
+    })
+    .catch(err => {
+      const container = document.getElementById("pdf-container");
+      const info = document.createElement('div');
+      info.className = 'card';
+      info.style.color = 'red';
+      info.textContent = 'Errore nel caricamento di elenco.json: ' + err.message;
+      container.appendChild(info);
     });
-  });
+
+  function openSafe(direct, gview) {
+    const w = window.open(loadingURL, "_blank");
+    if (!w) return;
+
+    const frame = document.getElementById("testFrame");
+    frame.src = direct;
+
+    setTimeout(() => {
+      let ok = false;
+      try { ok = frame.contentWindow.location.href !== "about:blank"; }
+      catch(e){ ok = false; }
+
+      w.location.href = ok ? direct : gview;
+    }, 5000);
+  }
+})();
 </script>
 
 </body>
