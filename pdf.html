@@ -7,8 +7,8 @@
 <style>
 body {
   font-family: Arial;
-  background: black;
   background-size: cover;
+  background: black;
   background-position: center top;
   background-repeat: no-repeat;
   padding: 40px;
@@ -65,6 +65,7 @@ h1 {
   display: flex;
   flex-direction: column;
   gap: 15px;
+  color: green;
 }
 
 .card button {
@@ -127,32 +128,33 @@ h1 {
 <iframe id="testFrame"></iframe>
 
 <script>
-
 const params = new URLSearchParams(window.location.search);
 const cartella = params.get("cartella");
 
 document.getElementById("titolo").innerHTML =
     "PDF in: " + cartella + "<br>" +
-    "DESCRIZIONE COMANDI:<br>"  +
+    "DESCRIZIONE COMANDI:" + "<br>"  +
     "SE PREMI 'Vedi/Scarica': apre o scarica in base al browser<br>" +
-    "SE PREMI 'Vedi Online': visualizza sempre online (necessita circa 5 secondi per controlli)";
+    "SE PREMI 'Vedi Online': visualizza sempre online necessita di 5 secondi per controlli prima di visualizzare ";
 
 fetch("elenco.json")
   .then(r => r.json())
   .then(data => {
-
     const pdfs = data[cartella];
     const container = document.getElementById("pdf-container");
 
     pdfs.forEach(pdf => {
-
       const encodedName = encodeURIComponent(pdf);
       const encodedFolder = encodeURIComponent(cartella);
 
-      // percorso RELATIVO universale
-      const directUrl = `pdf/${encodedFolder}/${encodedName}`;
+      // 🔥 BASE URL AUTOMATICA (funziona con qualsiasi nome progetto)
+      const base = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, "/");
 
-      const gviewUrl = `https://docs.google.com/gview?embedded=1&url=${window.location.origin}/${directUrl}`;
+      // 🔥 URL PDF AUTOMATICO
+      const directUrl = `${base}pdf/${encodedFolder}/${encodedName}`;
+
+      // 🔥 GOOGLE VIEWER
+      const gviewUrl = `https://docs.google.com/gview?embedded=1&url=${directUrl}`;
 
       const card = document.createElement("div");
       card.className = "card";
@@ -167,16 +169,21 @@ fetch("elenco.json")
 
       container.appendChild(card);
     });
-
   });
 
+
+// 🔵 VEDI/SCARICA
 function openFast(url) {
   window.open(url, "_blank");
 }
 
+
+// 🟢 VEDI ONLINE
 function openSafe(directUrl, gviewUrl) {
 
-  const newTab = window.open("loading.html", "_blank");
+  // 🔥 loading.html AUTOMATICO
+  const base = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, "/");
+  const newTab = window.open(base + "loading.html", "_blank");
 
   if (!newTab) return;
 
@@ -186,7 +193,6 @@ function openSafe(directUrl, gviewUrl) {
   frame.src = directUrl;
 
   setTimeout(() => {
-
     let loaded = false;
 
     try {
@@ -206,17 +212,16 @@ function openSafe(directUrl, gviewUrl) {
   }, 5000);
 }
 
-function showLoading(show, title = "", subtitle = "") {
 
+// Popup
+function showLoading(show, title = "", subtitle = "") {
   const popup = document.getElementById("loadingPopup");
   const sub = document.getElementById("loadingSub");
 
   popup.style.display = show ? "block" : "none";
-
   if (title) popup.childNodes[0].textContent = "⏳ " + title;
   if (subtitle) sub.textContent = subtitle;
 }
-
 </script>
 
 </body>
