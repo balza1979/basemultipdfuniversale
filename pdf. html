@@ -7,9 +7,8 @@
 <style>
 body {
   font-family: Arial;
-  /background-image: url('sfondo-elmi-verticale.jpg'); /* stesso sfondo delle altre pagine */
-  background-size: cover;
   background: black;
+  background-size: cover;
   background-position: center top;
   background-repeat: no-repeat;
   padding: 40px;
@@ -17,7 +16,7 @@ body {
 
 h1 {
   text-align: center;
- color: red; 
+  color: red; 
   font-weight: bold;
   font-size: 26px;
 }
@@ -42,7 +41,6 @@ h1 {
     background-color: #025aa5;
 }
 
-/* CARD LAYOUT */
 .card {
   background: grey;
   padding: 20px;
@@ -63,12 +61,10 @@ h1 {
   word-break: break-word;
 }
 
-/* Pulsanti in colonna a destra */
 .button-column {
   display: flex;
   flex-direction: column;
   gap: 15px;
-  color: green;
 }
 
 .card button {
@@ -87,7 +83,6 @@ h1 {
   background: #0056b3;
 }
 
-/* Popup centrale */
 #loadingPopup {
   position: fixed;
   top: 50%;
@@ -111,7 +106,6 @@ h1 {
   font-weight: normal;
 }
 
-/* iframe invisibile */
 #testFrame {
   display: none;
 }
@@ -125,37 +119,40 @@ h1 {
 <h1 id="titolo"></h1>
 <div id="pdf-container"></div>
 
-<!-- Popup caricamento -->
 <div id="loadingPopup">
   ⏳ Caricamento del documento...
   <span id="loadingSub">Attendere qualche secondo</span>
 </div>
 
-<!-- iframe invisibile per test PDF -->
 <iframe id="testFrame"></iframe>
 
 <script>
+
 const params = new URLSearchParams(window.location.search);
 const cartella = params.get("cartella");
 
 document.getElementById("titolo").innerHTML =
     "PDF in: " + cartella + "<br>" +
-    "DESCRIZIONE COMANDI:" + "<br>"  +
+    "DESCRIZIONE COMANDI:<br>"  +
     "SE PREMI 'Vedi/Scarica': apre o scarica in base al browser<br>" +
-    "SE PREMI 'Vedi Online': visualizza sempre online necessita di 5 secondi per controlli prima di visualizzare ";
+    "SE PREMI 'Vedi Online': visualizza sempre online (necessita circa 5 secondi per controlli)";
 
 fetch("elenco.json")
   .then(r => r.json())
   .then(data => {
+
     const pdfs = data[cartella];
     const container = document.getElementById("pdf-container");
 
     pdfs.forEach(pdf => {
+
       const encodedName = encodeURIComponent(pdf);
       const encodedFolder = encodeURIComponent(cartella);
 
-      const directUrl = `https://balza1979.github.io/Test-multi-pdf/pdf/${encodedFolder}/${encodedName}`;
-      const gviewUrl = `https://docs.google.com/gview?embedded=1&url=${directUrl}`;
+      // percorso RELATIVO universale
+      const directUrl = `pdf/${encodedFolder}/${encodedName}`;
+
+      const gviewUrl = `https://docs.google.com/gview?embedded=1&url=${window.location.origin}/${directUrl}`;
 
       const card = document.createElement("div");
       card.className = "card";
@@ -170,19 +167,16 @@ fetch("elenco.json")
 
       container.appendChild(card);
     });
+
   });
 
-
-// 🔵 VEDI/SCARICA
 function openFast(url) {
   window.open(url, "_blank");
 }
 
-
-// 🟢 VEDI ONLINE
 function openSafe(directUrl, gviewUrl) {
 
-  const newTab = window.open("https://balza1979.github.io/Test-multi-pdf/loading.html", "_blank");
+  const newTab = window.open("loading.html", "_blank");
 
   if (!newTab) return;
 
@@ -192,6 +186,7 @@ function openSafe(directUrl, gviewUrl) {
   frame.src = directUrl;
 
   setTimeout(() => {
+
     let loaded = false;
 
     try {
@@ -211,18 +206,18 @@ function openSafe(directUrl, gviewUrl) {
   }, 5000);
 }
 
-
-// Popup
 function showLoading(show, title = "", subtitle = "") {
+
   const popup = document.getElementById("loadingPopup");
   const sub = document.getElementById("loadingSub");
 
   popup.style.display = show ? "block" : "none";
+
   if (title) popup.childNodes[0].textContent = "⏳ " + title;
   if (subtitle) sub.textContent = subtitle;
 }
+
 </script>
 
 </body>
 </html>
-
